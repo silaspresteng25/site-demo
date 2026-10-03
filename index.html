@@ -1,0 +1,951 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Trade website demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* set per trade by the script */
+  --ground: #25313B;
+  --accent: #F26B21;
+  --accent-ink: #15171A;
+  --on-ground: #FFFFFF;
+  --on-ground-soft: rgba(255, 255, 255, .82);
+
+  --page: #F2F3F5;
+  --surface: #FFFFFF;
+  --ink: #16191C;
+  --muted: #535A61;
+  --line: #D3D8DD;
+  --link: var(--ground);
+
+  --display: "Barlow Condensed", "Arial Narrow", "Roboto Condensed", Arial, sans-serif;
+  --body: "Barlow", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --wrap: 1120px;
+  --gutter: clamp(20px, 5vw, 40px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #131517;
+    --surface: #1C1F22;
+    --ink: #EEF0F2;
+    --muted: #A7AEB5;
+    --line: #353A40;
+    --link: var(--accent);
+  }
+}
+:root[data-theme="dark"] {
+  --page: #131517;
+  --surface: #1C1F22;
+  --ink: #EEF0F2;
+  --muted: #A7AEB5;
+  --line: #353A40;
+  --link: var(--accent);
+}
+
+*, *::before, *::after { box-sizing: inherit; }
+html { scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 84px); -webkit-text-size-adjust: 100%; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+}
+h1, h2, h3 { font-family: var(--display); font-weight: 700; line-height: 1.02; margin: 0; }
+h2 { font-size: clamp(2rem, 4.4vw, 3rem); }
+h3 { font-size: 1.5rem; line-height: 1.1; }
+p { margin: 0; }
+a { color: var(--link); }
+ul { margin: 0; padding: 0; list-style: none; }
+svg { display: block; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+.wrap { max-width: var(--wrap); margin-inline: auto; padding-inline: var(--gutter); }
+
+/* demo bar: for the person showing the site, not part of the site itself */
+.demo {
+  background: #0E1012;
+  color: #E8EAEC;
+  font-size: .9375rem;
+}
+.demo .wrap {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px;
+  padding-block: 10px;
+}
+.demo strong { font-weight: 600; }
+.demo label { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+.demo select {
+  font: inherit; color: #0E1012; background: #FFFFFF;
+  border: 0; border-radius: 6px; padding: 8px 10px; min-height: 40px; max-width: 100%;
+}
+
+/* header */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+.top .wrap { display: flex; align-items: center; gap: 20px; min-height: 72px; }
+.brand { display: flex; align-items: center; gap: 12px; min-width: 0; color: var(--ink); text-decoration: none; }
+.brand-mark {
+  flex: none; width: 44px; height: 44px; border-radius: 8px;
+  background: var(--ground); color: var(--accent);
+  display: grid; place-items: center;
+}
+.brand-mark svg { width: 26px; height: 26px; }
+.brand-name { display: block; font-family: var(--display); font-weight: 700; font-size: 1.3125rem; line-height: 1; }
+@media (min-width: 520px) { .brand-name { font-size: 1.5rem; } }
+.brand-sub { display: block; font-size: .875rem; color: var(--muted); line-height: 1.2; margin-top: 3px; }
+.nav { display: none; margin-left: auto; gap: 26px; }
+.nav a { color: var(--ink); text-decoration: none; font-weight: 500; padding-block: 10px; }
+.nav a:hover { text-decoration: underline; text-underline-offset: 5px; }
+.top .btn { margin-left: auto; }
+@media (min-width: 900px) {
+  .nav { display: flex; }
+  .top .btn { margin-left: 0; }
+}
+
+/* buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 48px; padding: 10px 20px;
+  font: 600 1.0625rem/1.1 var(--body);
+  border-radius: 8px; border: 2px solid transparent;
+  text-decoration: none; cursor: pointer; white-space: nowrap;
+}
+.btn-primary { background: var(--accent); color: var(--accent-ink); }
+.btn-primary:hover { filter: brightness(1.06); }
+.btn-ghost { border-color: var(--on-ground); color: var(--on-ground); background: transparent; }
+.btn-ghost:hover { background: rgba(255, 255, 255, .12); }
+.btn svg { width: 18px; height: 18px; }
+.call-long { display: none; }
+@media (min-width: 520px) { .call-long { display: inline; } .call-short { display: none; } }
+
+/* hero */
+.hero { background: var(--ground); color: var(--on-ground); }
+.hero .wrap {
+  display: grid; gap: 40px;
+  padding-block: clamp(44px, 7vw, 88px);
+}
+.hero h1 { font-size: clamp(2.6rem, 6.4vw, 4.75rem); line-height: .97; max-width: 13ch; }
+.hero-sub { font-size: 1.1875rem; color: var(--on-ground-soft); max-width: 46ch; margin-top: 20px; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.checks { display: grid; gap: 10px; margin-top: 30px; }
+.checks li { display: flex; gap: 10px; align-items: flex-start; font-weight: 500; }
+.checks svg { flex: none; width: 22px; height: 22px; margin-top: 2px; color: var(--accent); }
+@media (min-width: 900px) {
+  .hero .wrap { grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); align-items: center; gap: 56px; }
+}
+
+/* estimate card */
+.card {
+  background: var(--surface); color: var(--ink);
+  border-radius: 12px; padding: clamp(20px, 3vw, 30px);
+  border-top: 6px solid var(--accent);
+}
+.card h2 { font-size: 1.875rem; }
+.card-note { color: var(--muted); margin-top: 6px; }
+.field { margin-top: 16px; }
+.field label { display: block; font-weight: 600; font-size: .9375rem; margin-bottom: 6px; }
+.field input, .field select, .field textarea {
+  width: 100%; font: inherit; color: var(--ink); background: var(--page);
+  border: 1px solid var(--line); border-radius: 8px; padding: 11px 12px; min-height: 48px;
+}
+.field textarea { min-height: 84px; resize: vertical; }
+.card .btn { width: 100%; margin-top: 20px; }
+.form-msg { margin-top: 14px; font-weight: 500; }
+.form-msg[data-kind="error"] { color: #B3261E; }
+.form-msg:empty { display: none; }
+
+/* promise band */
+.band { background: var(--accent); color: var(--accent-ink); }
+.band ul {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 24px;
+  padding-block: 22px;
+  font-family: var(--display); font-weight: 600; font-size: 1.3125rem; line-height: 1.1;
+}
+@media (min-width: 760px) { .band ul { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+
+/* sections */
+.section { padding-block: clamp(56px, 8vw, 96px); }
+.section-alt { background: var(--surface); border-block: 1px solid var(--line); }
+.lede { color: var(--muted); max-width: 56ch; margin-top: 14px; font-size: 1.125rem; }
+
+.services { display: grid; gap: 0 48px; margin-top: 36px; }
+.services li { border-top: 1px solid var(--line); padding-block: 20px; }
+.services p { color: var(--muted); margin-top: 6px; max-width: 48ch; }
+@media (min-width: 760px) { .services { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.steps { display: grid; gap: 28px; margin-top: 36px; counter-reset: step; }
+.steps li { counter-increment: step; }
+.steps li::before {
+  content: counter(step);
+  display: block;
+  font-family: var(--display); font-weight: 700; font-size: 3.5rem; line-height: 1;
+  color: var(--link);
+  margin-bottom: 10px;
+}
+.steps p { color: var(--muted); margin-top: 8px; max-width: 34ch; }
+@media (min-width: 760px) { .steps { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 40px; } }
+
+.work { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 36px; }
+@media (min-width: 760px) { .work { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; } }
+.shot {
+  aspect-ratio: 4 / 3; border-radius: 10px;
+  background: var(--ground); color: var(--on-ground);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px; text-align: center;
+}
+.shot:nth-child(3n + 2) { background: color-mix(in srgb, var(--ground) 86%, #FFFFFF); }
+.shot:nth-child(3n) { background: color-mix(in srgb, var(--ground) 86%, #000000); }
+.shot svg { width: 40px; height: 40px; color: var(--accent); }
+.shot strong { font-family: var(--display); font-size: 1.25rem; line-height: 1.1; }
+.shot span { font-size: .875rem; color: var(--on-ground-soft); }
+
+.reviews { display: grid; gap: 22px; margin-top: 36px; }
+@media (min-width: 760px) { .reviews { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.review { border-top: 1px solid var(--line); padding-top: 18px; }
+.stars { color: var(--link); letter-spacing: 3px; font-size: 1.125rem; }
+.review blockquote { margin: 8px 0 12px; font-size: 1.125rem; line-height: 1.45; }
+.review cite { font-style: normal; color: var(--muted); font-size: .9375rem; }
+
+.split { display: grid; gap: 48px; }
+@media (min-width: 900px) { .split { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 72px; } }
+.towns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 22px; }
+.towns li { border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; background: var(--surface); }
+.faq { margin-top: 24px; border-bottom: 1px solid var(--line); }
+.faq details { border-top: 1px solid var(--line); }
+.faq summary {
+  cursor: pointer; list-style: none; padding: 18px 36px 18px 0; position: relative;
+  font-family: var(--display); font-weight: 600; font-size: 1.375rem; line-height: 1.15;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: "+"; position: absolute; right: 4px; top: 12px;
+  font-family: var(--body); font-weight: 400; font-size: 1.75rem; color: var(--link);
+}
+.faq details[open] summary::after { content: "\2212"; }
+.faq details p { color: var(--muted); padding: 0 36px 20px 0; max-width: 62ch; }
+
+.closer { background: var(--ground); color: var(--on-ground); }
+.closer .wrap {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 24px;
+  padding-block: clamp(40px, 6vw, 64px);
+}
+.closer p { color: var(--on-ground-soft); margin-top: 10px; max-width: 44ch; }
+.closer-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+.foot { padding-block: 40px; font-size: .9375rem; color: var(--muted); }
+.foot .wrap { display: grid; gap: 24px; }
+@media (min-width: 760px) { .foot .wrap { grid-template-columns: 1.3fr 1fr 1fr; } }
+.foot strong { display: block; color: var(--ink); font-family: var(--display); font-size: 1.375rem; line-height: 1.1; margin-bottom: 8px; }
+.foot-note { grid-column: 1 / -1; border-top: 1px solid var(--line); padding-top: 18px; }
+</style>
+</head>
+<body>
+
+<div class="demo" id="demoBar">
+  <div class="wrap">
+    <span><strong>Sample website.</strong> The name, phone number and photos get swapped for yours.</span>
+    <label for="tradePick">Trade
+      <select id="tradePick"></select>
+    </label>
+  </div>
+</div>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top" data-scroll="top">
+      <span class="brand-mark" data-icon></span>
+      <span>
+        <span class="brand-name" data-biz>Your Business Name</span>
+        <span class="brand-sub"><span data-trade-label>Roofing</span> in <span data-city>Your City</span></span>
+      </span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="#services" data-scroll="services">Services</a>
+      <a href="#work" data-scroll="work">Our work</a>
+      <a href="#reviews" data-scroll="reviews">Reviews</a>
+      <a href="#faq" data-scroll="faq">Questions</a>
+    </nav>
+    <a class="btn btn-primary" data-tel href="tel:5555550123">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>
+      <span class="call-short">Call</span><span class="call-long">Call <span data-phone>(555) 555-0123</span></span>
+    </a>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <div>
+        <h1 id="headline"></h1>
+        <p class="hero-sub" id="subhead"></p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#estimate" data-scroll="estimate">Get a free estimate</a>
+          <a class="btn btn-ghost" data-tel href="tel:5555550123"><span>Call <span data-phone>(555) 555-0123</span></span></a>
+        </div>
+        <ul class="checks" id="checks"></ul>
+      </div>
+
+      <form class="card" id="estimate" novalidate>
+        <h2>Get a free estimate</h2>
+        <p class="card-note">Tell us about the job and we'll call you back with a time to come out.</p>
+        <div class="field">
+          <label for="fName">Your name</label>
+          <input id="fName" name="name" type="text" autocomplete="name">
+        </div>
+        <div class="field">
+          <label for="fPhone">Phone number</label>
+          <input id="fPhone" name="phone" type="tel" autocomplete="tel">
+        </div>
+        <div class="field">
+          <label for="fService">What do you need?</label>
+          <select id="fService" name="service"></select>
+        </div>
+        <div class="field">
+          <label for="fDetails">Anything we should know?</label>
+          <textarea id="fDetails" name="details"></textarea>
+        </div>
+        <button class="btn btn-primary" type="submit" id="sendBtn">Request my estimate</button>
+        <p class="form-msg" id="formMsg" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+
+  <div class="band">
+    <div class="wrap">
+      <ul>
+        <li>Licensed and insured</li>
+        <li>Free written estimates</li>
+        <li>Locally owned</li>
+        <li>Work guaranteed in writing</li>
+      </ul>
+    </div>
+  </div>
+
+  <section class="section" id="services">
+    <div class="wrap">
+      <h2>What we do</h2>
+      <p class="lede" id="servicesLede"></p>
+      <ul class="services" id="serviceList"></ul>
+    </div>
+  </section>
+
+  <section class="section section-alt">
+    <div class="wrap">
+      <h2>How it works</h2>
+      <ol class="steps" style="list-style:none;padding:0;margin-bottom:0">
+        <li><h3>Tell us about the job</h3><p>Call or send the form. We'll set a time to come out and take a look.</p></li>
+        <li><h3>Get a written price</h3><p>You get a clear estimate with the scope, the cost and the schedule. No pressure.</p></li>
+        <li><h3>We do the work</h3><p>The crew shows up when promised, keeps you posted and cleans up before leaving.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" id="work">
+    <div class="wrap">
+      <h2>Recent work</h2>
+      <p class="lede">Photos of finished jobs do more selling than anything we could write.</p>
+      <div class="work" id="workGrid"></div>
+    </div>
+  </section>
+
+  <section class="section section-alt" id="reviews">
+    <div class="wrap">
+      <h2>What customers say</h2>
+      <p class="lede">Sample reviews. Your real Google reviews show up here.</p>
+      <div class="reviews" id="reviewList"></div>
+    </div>
+  </section>
+
+  <section class="section" id="faq">
+    <div class="wrap split">
+      <div>
+        <h2>Where we work</h2>
+        <p class="lede">Based in <span data-city>Your City</span> and serving the towns around it.</p>
+        <ul class="towns">
+          <li data-city>Your City</li>
+          <li>Nearby town</li>
+          <li>Nearby town</li>
+          <li>Nearby town</li>
+          <li>Nearby town</li>
+          <li>Nearby town</li>
+        </ul>
+      </div>
+      <div>
+        <h2>Common questions</h2>
+        <div class="faq" id="faqList"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="closer">
+    <div class="wrap">
+      <div>
+        <h2>Ready for a price?</h2>
+        <p>Estimates are free and there's no obligation. Most calls are returned the same day.</p>
+      </div>
+      <div class="closer-actions">
+        <a class="btn btn-primary" href="#estimate" data-scroll="estimate">Get a free estimate</a>
+        <a class="btn btn-ghost" data-tel href="tel:5555550123"><span>Call <span data-phone>(555) 555-0123</span></span></a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <div>
+      <strong data-biz>Your Business Name</strong>
+      <span data-trade-label>Roofing</span> in <span data-city>Your City</span> and nearby towns.<br>
+      License #000000
+    </div>
+    <div>
+      <strong>Contact</strong>
+      <span data-phone>(555) 555-0123</span><br>
+      you@yourbusiness.com
+    </div>
+    <div>
+      <strong>Hours</strong>
+      Monday to Friday, 7am to 6pm<br>
+      Saturday by appointment
+    </div>
+    <p class="foot-note">This is a sample website. Business details shown here are placeholders.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  var ICONS = {
+    roofing: '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9h13v-9"/><path d="M10 19v-5h4v5"/>',
+    hvac: '<path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4"/><path d="M9.5 4.5 12 7l2.5-2.5M9.5 19.5 12 17l2.5 2.5M4.5 9.5 7 12l-2.5 2.5M19.5 9.5 17 12l2.5 2.5"/>',
+    plumbing: '<path d="M4 6v6"/><path d="M4 9h9a3 3 0 0 1 3 3v1.5"/><path d="M9 9V6M7 6h4"/><path d="M16 16.5s-1.6 1.8-1.6 2.9a1.6 1.6 0 0 0 3.2 0c0-1.1-1.6-2.9-1.6-2.9z"/>',
+    electrical: '<path d="M13 2 5 13.5h6L10 22l8.5-12h-6L13 2z"/>',
+    remodeling: '<path d="M13.5 3.5 20.5 10.5 18 13l-7-7z"/><path d="M12.5 7.5 3.5 16.5 7 20l9-9"/>',
+    concrete: '<path d="M3 11l9-5 9 5-9 5z"/><path d="M3 11v4l9 5 9-5v-4"/><path d="M12 16v4"/>',
+    fence: '<path d="M3 21V7l2-2.5L7 7v14z"/><path d="M10 21V7l2-2.5L14 7v14z"/><path d="M17 21V7l2-2.5L21 7v14z"/><path d="M7 10h3M14 10h3M7 17h3M14 17h3"/>',
+    deck: '<path d="M3 6h18M5 6v6M12 6v6M19 6v6"/><path d="M2 12h20v3H2z"/><path d="M5 15v5M19 15v5"/>',
+    siding: '<path d="M3 11 12 4l9 7"/><path d="M5 10v10h14V10"/><path d="M5 13.5h14M5 17h14"/>',
+    flooring: '<path d="M3 5h18v14H3z"/><path d="M3 9.7h18M3 14.3h18M9 5v4.7M15 9.7v4.6M8 14.3V19M17 14.3V19"/>',
+    masonry: '<path d="M3 5h18v14H3z"/><path d="M3 9.7h18M3 14.3h18M12 5v4.7M7.5 9.7v4.6M16.5 9.7v4.6M12 14.3V19"/>',
+    foundation: '<path d="M4 12 12 5l8 7"/><path d="M6 11v6h12v-6"/><path d="M3 17h18v3.5H3z"/><path d="M9 17v3.5M15 17v3.5"/>',
+    paving: '<path d="M7 3 3 21M17 3l4 18"/><path d="M12 4v3M12 10.5v3M12 17v3"/>',
+    waterdamage: '<path d="M12 3s6.5 7 6.5 11.5a6.5 6.5 0 0 1-13 0C5.5 10 12 3 12 3z"/><path d="M9 15a3 3 0 0 0 3 3"/>',
+    garagedoor: '<path d="M3 21V9l9-5 9 5v12"/><path d="M6 21V11h12v10"/><path d="M6 14.3h12M6 17.6h12"/>',
+    tree: '<path d="M12 22v-6"/><path d="M12 3 6 11h3.5L5.5 16h13L14.5 11H18z"/>'
+  };
+
+  var TRADES = [
+    {
+      key: 'roofing', label: 'Roofing', ground: '#25313B', accent: '#F26B21',
+      headline: "A roof you won't have to think about again",
+      sub: 'Repairs, full replacements and storm damage work, done by a local crew that shows up on time and cleans up after.',
+      checks: ['Free roof inspection', 'Written warranty on every job', 'Help with insurance claims'],
+      lede: 'Whatever is going on up there, we can fix it or replace it.',
+      services: [
+        ['Roof replacement', 'Full tear-off and new shingles, metal or flat roofing, backed by a written warranty.'],
+        ['Roof repair', 'Leaks, missing shingles and failed flashing fixed before they become ceiling stains.'],
+        ['Storm and hail damage', 'A free inspection after the storm, with photos you can send to your insurer.'],
+        ['Roof inspections', "A photo report showing what's fine, what's worn and what can wait."],
+        ['Gutters and downspouts', 'Seamless gutters sized for your roof and pitched to drain.'],
+        ['Skylights and vents', 'New installs and reseals that stay dry.']
+      ],
+      faqs: [
+        ['How long does a roof replacement take?', "Most homes take one to three days once materials are on site. You'll get dates in writing before we start."],
+        ['Do you work with insurance claims?', "Yes. We document the damage with photos and can meet your adjuster on site."]
+      ],
+      result: 'The new roof looks great.'
+    },
+    {
+      key: 'hvac', label: 'Heating and cooling', ground: '#12355B', accent: '#F0633A',
+      headline: 'Warm in January, cool in July',
+      sub: 'Furnace and air conditioner repair, replacement and tune-ups from technicians who explain the fix before they start.',
+      checks: ['Same-day service calls', 'Upfront price before any work', 'All makes and models'],
+      lede: 'Repairs when something quits, and maintenance so it happens less often.',
+      services: [
+        ['Furnace repair', 'No heat, short cycling or strange noises diagnosed and fixed, usually in one visit.'],
+        ['Air conditioner repair', 'Warm air, frozen coils and units that will not start, sorted out fast.'],
+        ['New system installation', 'Right-sized furnaces, air conditioners and heat pumps, installed to code.'],
+        ['Seasonal tune-ups', 'A cleaning and safety check each season so small problems stay small.'],
+        ['Ductwork and airflow', 'Leaky or undersized ducts repaired so every room gets its share.'],
+        ['Thermostats and controls', 'Smart thermostats installed and set up to match how you live.']
+      ],
+      faqs: [
+        ['How often should my system be serviced?', 'Once a year for each system: the furnace in fall and the air conditioner in spring.'],
+        ['Should I repair or replace?', "We price both. An older unit facing a major repair is often worth replacing, and we'll show you the numbers either way."]
+      ],
+      result: 'The house has never been more comfortable.'
+    },
+    {
+      key: 'plumbing', label: 'Plumbing', ground: '#0F4C81', accent: '#E8923F',
+      headline: 'Leaks, clogs and water heaters, fixed right',
+      sub: 'From a dripping faucet to a full repipe, you get a clear price before any work begins.',
+      checks: ['Emergency calls answered', 'Flat price before we start', 'Clean, careful work in your home'],
+      lede: 'Small repairs, big replacements and everything between.',
+      services: [
+        ['Leak repair', 'Pipes, valves and fittings found and fixed before the damage spreads.'],
+        ['Drain cleaning', 'Slow and blocked drains cleared, with a camera check when it keeps coming back.'],
+        ['Water heaters', 'Tank and tankless units repaired or replaced, often the same day.'],
+        ['Toilets, faucets and fixtures', 'Repairs and new installs for kitchens, baths and laundry rooms.'],
+        ['Sewer and water lines', 'Line repair and replacement with as little digging as the job allows.'],
+        ['Sump pumps', 'New pumps and battery backups so the basement stays dry.']
+      ],
+      faqs: [
+        ['Do you handle emergencies?', "Yes. Call the number at the top of the page and we'll tell you how soon we can be there."],
+        ['Do you charge by the hour or by the job?', 'By the job. You approve a flat price before we start, so the bill is never a surprise.']
+      ],
+      result: 'The new water heater works perfectly.'
+    },
+    {
+      key: 'electrical', label: 'Electrical', ground: '#1D1D22', accent: '#FFC400',
+      headline: 'Safe, tidy electrical work that passes inspection',
+      sub: 'Panel upgrades, new circuits, lighting and troubleshooting by a licensed electrician.',
+      checks: ['Licensed electrician on every job', 'Permits and inspections handled', 'Upfront price before any work'],
+      lede: 'Homes and small businesses, from one outlet to a whole rewire.',
+      services: [
+        ['Panel upgrades', 'More capacity and modern breakers for older homes and new loads.'],
+        ['Outlets, switches and circuits', 'New circuits, added outlets and replacements for anything worn or warm.'],
+        ['Lighting', 'Recessed, under-cabinet, outdoor and landscape lighting, wired cleanly.'],
+        ['Troubleshooting and repairs', 'Tripping breakers, dead outlets and flickering lights traced to the cause.'],
+        ['EV charger installation', 'A dedicated circuit and charger installed in the garage or driveway.'],
+        ['Generators and surge protection', 'Standby power and whole-home protection for outages and storms.']
+      ],
+      faqs: [
+        ['Do you pull permits?', 'Yes. When a job needs a permit, we pull it and schedule the inspection.'],
+        ['My breaker keeps tripping. Is that serious?', "It can be. A breaker that trips repeatedly is protecting an overloaded or faulty circuit, so it's worth a look."]
+      ],
+      result: 'The panel upgrade passed inspection the first time.'
+    },
+    {
+      key: 'remodeling', label: 'Remodeling', ground: '#23423A', accent: '#D9AE52',
+      headline: 'The kitchen, bath or basement you keep talking about',
+      sub: 'One contractor from first sketch to final walkthrough, with a schedule and a budget you can see.',
+      checks: ['One point of contact start to finish', 'Written schedule and budget', 'Daily cleanup'],
+      lede: 'Single rooms or the whole house.',
+      services: [
+        ['Kitchen remodels', 'New layouts, cabinets, counters and lighting, managed as one project.'],
+        ['Bathroom remodels', 'Showers, tile, vanities and plumbing updated without loose ends.'],
+        ['Basement finishing', 'Unused square footage turned into rooms you will use.'],
+        ['Room additions', 'Extra space that matches the rest of the house inside and out.'],
+        ['Interior updates', 'Trim, doors, drywall and paint that make a tired room feel new.'],
+        ['Design and planning', 'Drawings, selections and a firm price before any demolition.']
+      ],
+      faqs: [
+        ['How long does a remodel take?', "A bathroom usually runs a few weeks and a kitchen a bit longer. You'll get a written schedule before we start."],
+        ['Can we stay in the house during the work?', 'Almost always. We seal off the work area and clean up at the end of each day.']
+      ],
+      result: 'We love the new kitchen.'
+    },
+    {
+      key: 'concrete', label: 'Concrete', ground: '#3A3F45', accent: '#F2A900',
+      headline: 'Driveways, patios and slabs poured to last',
+      sub: 'Proper base prep, clean finishing and straight edges, from the tear-out to the final seal.',
+      checks: ['Old concrete removed and hauled', 'Proper base and reinforcement', 'Written warranty'],
+      lede: 'Residential and light commercial flatwork.',
+      services: [
+        ['Driveways', 'New and replacement driveways with the base and thickness to carry the load.'],
+        ['Patios and walkways', 'Outdoor space shaped to your yard, with a finish that drains.'],
+        ['Garage and shop slabs', 'Level, reinforced floors ready for vehicles and equipment.'],
+        ['Steps and stoops', 'Safe, even steps formed to fit your entry.'],
+        ['Stamped and colored concrete', 'The look of stone or brick without the upkeep.'],
+        ['Tear-out and replacement', 'Cracked or sunken concrete removed and done over properly.']
+      ],
+      faqs: [
+        ['When can I drive on a new driveway?', "Plan on about a week for cars. We'll give you exact timing for your pour and the weather."],
+        ['Will it crack?', 'All concrete can crack. Good base prep, the right mix and control joints keep cracks small and where they belong.']
+      ],
+      result: 'The new driveway looks great.'
+    },
+    {
+      key: 'fence', label: 'Fencing', ground: '#2E4A2B', accent: '#E0984F',
+      headline: 'Fences that stand straight for years',
+      sub: 'Wood, vinyl, chain link and ornamental fences, set on posts that stay put.',
+      checks: ['Free on-site measure', 'Posts set below the frost line', 'Permits handled'],
+      lede: 'Privacy, pets, pools and property lines.',
+      services: [
+        ['Wood privacy fences', 'Cedar and treated pine built board by board on site.'],
+        ['Vinyl fencing', 'Clean lines and no painting, in privacy and picket styles.'],
+        ['Chain link', 'Affordable, durable fencing for yards, kennels and lots.'],
+        ['Ornamental aluminum and steel', 'The wrought-iron look without the rust.'],
+        ['Gates and openers', 'Walk gates, drive gates and automatic openers that latch every time.'],
+        ['Fence repair', 'Leaning posts, broken boards and storm damage put right.']
+      ],
+      faqs: [
+        ['Do you handle the property line and permits?', "We check local rules and pull the permit when one is needed. You'll want a survey or marked pins for the line."],
+        ['How long does installation take?', 'Most yards take one to three days once materials arrive.']
+      ],
+      result: 'The new fence looks great.'
+    },
+    {
+      key: 'deck', label: 'Decks', ground: '#4A2F23', accent: '#E6A23C',
+      headline: 'A deck built for the way you use your yard',
+      sub: 'Custom decks, stairs and railings in wood or composite, built to code and finished clean.',
+      checks: ['Free design and estimate', 'Built to code, permit included', 'Wood or composite'],
+      lede: 'New builds, rebuilds and repairs.',
+      services: [
+        ['Custom deck builds', 'Designed around your house, your yard and how you will use it.'],
+        ['Composite decking', 'Low-upkeep boards that hold their color and never need stain.'],
+        ['Deck repair', 'Soft boards, loose railings and wobbly stairs made solid again.'],
+        ['Railings and stairs', 'Safe, good-looking railings in wood, metal or cable.'],
+        ['Pergolas and covers', 'Shade and shelter so the deck gets used more of the year.'],
+        ['Staining and sealing', 'Cleaning and a fresh coat to protect the wood.']
+      ],
+      faqs: [
+        ['Wood or composite?', "Wood costs less up front and needs staining. Composite costs more and needs very little upkeep. We'll price both."],
+        ['Do I need a permit?', 'Most decks do. We handle the drawings, the permit and the inspections.']
+      ],
+      result: 'We use the new deck every evening.'
+    },
+    {
+      key: 'siding', label: 'Siding', ground: '#34506B', accent: '#F2C14E',
+      headline: 'New siding changes the whole house',
+      sub: 'Vinyl, fiber cement and engineered wood, installed tight against the weather with trim that lines up.',
+      checks: ['Free estimate with samples', 'Old siding removed and hauled', 'Written warranty'],
+      lede: 'Full replacements, repairs and storm damage.',
+      services: [
+        ['Vinyl siding', 'Durable, affordable and available in more colors than you would expect.'],
+        ['Fiber cement siding', 'The look of painted wood with far better resistance to weather.'],
+        ['Engineered wood siding', 'Real wood texture with factory finishes that last.'],
+        ['Storm damage repair', 'Hail and wind damage documented and repaired.'],
+        ['Soffit and fascia', 'The edges of the roofline replaced so everything matches.'],
+        ['Trim and wraps', 'Windows, doors and corners finished cleanly.']
+      ],
+      faqs: [
+        ['How long does a siding job take?', 'Most homes take one to two weeks, depending on size and weather.'],
+        ['Can you match my existing siding for a repair?', "Often, yes. We'll bring samples and tell you plainly how close the match will be."]
+      ],
+      result: 'The house looks brand new.'
+    },
+    {
+      key: 'flooring', label: 'Flooring', ground: '#3B2A22', accent: '#D8AA68',
+      headline: 'Floors that look right and wear well',
+      sub: 'Hardwood, luxury vinyl, tile and carpet, installed over a properly prepared subfloor.',
+      checks: ['Free in-home measure', 'Furniture moved for you', 'Old flooring hauled away'],
+      lede: 'One room or the whole house.',
+      services: [
+        ['Hardwood installation', 'Solid and engineered hardwood laid tight and finished on site.'],
+        ['Hardwood refinishing', 'Worn floors sanded, stained and sealed back to new.'],
+        ['Luxury vinyl plank', 'Waterproof floors for kitchens, baths and basements.'],
+        ['Tile floors', 'Flat, even tile with clean grout lines.'],
+        ['Carpet', 'Quality carpet and pad, stretched and seamed properly.'],
+        ['Subfloor repair', 'Squeaks, dips and soft spots fixed before the new floor goes down.']
+      ],
+      faqs: [
+        ['How long until we can walk on it?', 'Vinyl and carpet are ready the same day. Refinished hardwood needs a day or two to cure.'],
+        ['Do you move furniture?', "Yes. Tell us what's in the room and we'll include it in the estimate."]
+      ],
+      result: 'The new floors look great.'
+    },
+    {
+      key: 'masonry', label: 'Masonry', ground: '#6E2A20', accent: '#E6D0A6',
+      headline: 'Brick and stone work done the right way',
+      sub: "Chimneys, steps, walls and tuckpointing by masons who match what's already there.",
+      checks: ['Brick and mortar matched', 'Free on-site estimate', 'Work guaranteed in writing'],
+      lede: 'Repairs and new work in brick, block and stone.',
+      services: [
+        ['Tuckpointing', 'Crumbling mortar ground out and replaced before water gets in.'],
+        ['Chimney repair', 'Crowns, caps, flashing and brickwork rebuilt from the roofline up.'],
+        ['Brick and block walls', 'New walls and repairs laid straight and true.'],
+        ['Stone veneer', 'Natural and manufactured stone for fronts, fireplaces and columns.'],
+        ['Steps and walkways', 'Brick and stone steps rebuilt on a solid footing.'],
+        ['Retaining walls', 'Walls engineered to hold the hill and drain properly.']
+      ],
+      faqs: [
+        ['How do I know if I need tuckpointing?', "If the mortar is crumbling or you can scrape it out with a key, it's time."],
+        ['Can you match my brick?', 'We bring samples to the job and match color, size and mortar as closely as the brick allows.']
+      ],
+      result: 'The chimney looks like it was never damaged.'
+    },
+    {
+      key: 'foundation', label: 'Foundation repair', ground: '#2F3A45', accent: '#EA7B48',
+      headline: 'Cracks and wet basements, fixed at the cause',
+      sub: 'Honest inspections and lasting repairs for settling, bowing walls and water in the basement.',
+      checks: ['Free inspection and written report', 'Repairs explained in plain language', 'Written warranty'],
+      lede: 'We find out why it is happening, then fix that.',
+      services: [
+        ['Foundation crack repair', 'Cracks sealed and stabilized so they stop growing and stop leaking.'],
+        ['Bowing wall stabilization', 'Anchors, braces or beams that hold a wall where it is.'],
+        ['Basement waterproofing', 'Water kept out with drainage, sealing and grading.'],
+        ['Drain tile and sump pumps', 'Systems that move water away before it reaches the floor.'],
+        ['Piers and underpinning', 'Settling foundations supported on stable soil.'],
+        ['Crawl space repair', 'Moisture, sagging floors and failed supports corrected.']
+      ],
+      faqs: [
+        ['Is a crack in my foundation serious?', 'Hairline cracks are common. Wide, growing or horizontal cracks need a look, and the inspection is free.'],
+        ['Is the work guaranteed?', 'Yes. Every repair comes with a written warranty.']
+      ],
+      result: 'The basement has been dry ever since.'
+    },
+    {
+      key: 'paving', label: 'Paving', ground: '#232527', accent: '#F4C20D',
+      headline: 'Smooth, solid asphalt for driveways and lots',
+      sub: 'New paving, resurfacing and sealcoating, with the grading and drainage done right underneath.',
+      checks: ['Free on-site estimate', 'Proper base and drainage', 'Residential and commercial'],
+      lede: 'Driveways, private roads and parking lots.',
+      services: [
+        ['Driveway paving', 'New asphalt driveways on a compacted base that will not rut.'],
+        ['Parking lots', 'Paving and repairs scheduled around your business hours.'],
+        ['Resurfacing', 'A fresh layer over sound asphalt at a fraction of full replacement.'],
+        ['Sealcoating', 'Protection from sun, salt and water that extends the life of the surface.'],
+        ['Crack filling and patching', 'Small failures fixed before they become potholes.'],
+        ['Line striping', 'Crisp stalls, arrows and accessible spaces laid out to code.']
+      ],
+      faqs: [
+        ['How soon can I drive on new asphalt?', 'Usually after two to three days, a little longer in hot weather.'],
+        ['How often should I sealcoat?', 'Every two to three years keeps asphalt from drying out and cracking.']
+      ],
+      result: 'The new driveway looks great.'
+    },
+    {
+      key: 'waterdamage', label: 'Water damage restoration', ground: '#0E5A6B', accent: '#FFB23F',
+      headline: "Water in the house? We're on the way",
+      sub: 'Fast water removal, drying and repairs, with photos and paperwork for your insurance claim.',
+      checks: ['Phones answered around the clock', 'Insurance documentation included', 'Drying verified with meters'],
+      lede: 'From the first call to the last coat of paint.',
+      services: [
+        ['Emergency water removal', 'Standing water pumped and extracted as soon as we arrive.'],
+        ['Structural drying', 'Fans, dehumidifiers and daily readings until everything is truly dry.'],
+        ['Mold remediation', 'Mold contained, removed and prevented from coming back.'],
+        ['Sewage cleanup', 'Safe removal and full sanitizing after a backup.'],
+        ['Flooded basements', 'Water out, contents handled and the space dried and treated.'],
+        ['Repairs and rebuild', 'Drywall, flooring and trim put back the way they were.']
+      ],
+      faqs: [
+        ['How fast can you get here?', 'Call the number at the top of the page. We answer around the clock and give you an arrival time on the call.'],
+        ['Will my insurance cover it?', 'Many sudden leaks are covered. We document everything and work with your adjuster.']
+      ],
+      result: 'They saved our basement.'
+    },
+    {
+      key: 'garagedoor', label: 'Garage doors', ground: '#2B3A4A', accent: '#F4645A',
+      headline: "Garage door stuck? We'll get it moving",
+      sub: 'Springs, openers, cables and new doors, with most repairs finished in a single visit.',
+      checks: ['Same-day repairs', 'Upfront price before any work', 'Parts and labor warranty'],
+      lede: 'Repairs, replacements and new doors.',
+      services: [
+        ['Broken spring replacement', 'Both springs replaced and balanced so the door lifts easily.'],
+        ['Opener repair and installation', 'Quiet, reliable openers with phone control if you want it.'],
+        ['New garage doors', 'Insulated steel, carriage-house and modern styles, measured to fit.'],
+        ['Cables, rollers and tracks', 'Off-track and noisy doors aligned and running smoothly.'],
+        ['Panel replacement', 'A dented section swapped without replacing the whole door.'],
+        ['Tune-ups and safety checks', 'Lubrication, balance and sensor checks that prevent breakdowns.']
+      ],
+      faqs: [
+        ['Can I replace a broken spring myself?', "We don't recommend it. Springs are under heavy tension and can cause serious injury."],
+        ['How long does a new door take?', 'Installation takes a few hours once your door arrives.']
+      ],
+      result: 'The door is quieter than it has ever been.'
+    },
+    {
+      key: 'tree', label: 'Tree service', ground: '#1F4D2E', accent: '#B9DC4E',
+      headline: 'Tree work done safely and cleaned up completely',
+      sub: 'Removals, trimming and stump grinding by an insured crew that protects your lawn and your house.',
+      checks: ['Fully insured crew', 'Free on-site estimate', 'Complete cleanup and haul-away'],
+      lede: 'One branch or the whole lot.',
+      services: [
+        ['Tree removal', 'Dead, damaged and crowded trees taken down in controlled sections.'],
+        ['Trimming and pruning', 'Healthier trees, better views and branches off the roof.'],
+        ['Stump grinding', 'Stumps ground below the surface so you can plant or mow over them.'],
+        ['Storm damage cleanup', 'Fallen trees and hanging limbs cleared quickly and safely.'],
+        ['Lot and brush clearing', 'Overgrown areas opened up for building, fencing or lawn.'],
+        ['Tree health checks', 'A straight answer on whether a tree can be saved.']
+      ],
+      faqs: [
+        ['Are you insured?', "Yes, and we'll send a certificate before the job. Tree work is risky, so always ask."],
+        ['Do you haul everything away?', 'Yes. Brush, logs and sawdust are gone when we leave, unless you want the firewood.']
+      ],
+      result: 'The yard looks twice as big.'
+    }
+  ];
+
+  var SHARED_FAQS = [
+    ['Are estimates free?', 'Yes. We come out, look at the job and give you a written price at no charge.'],
+    ['Are you licensed and insured?', 'Yes. License and insurance details are available on request.']
+  ];
+  var REVIEWS = [
+    'Called on a Monday and had a written estimate the next day. The price never changed. {result}',
+    'They showed up when they said they would, explained everything and cleaned up before they left.',
+    "Fair price, good communication and quality work. I've already given their number to two neighbors."
+  ];
+  var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+
+  // Optional link settings: ?trade=roofing&name=Smith%20Roofing&city=Eagan&phone=612-555-0100&bar=0
+  // The same settings also work after a # instead of a ?.
+  function readSettings() {
+    var out = {};
+    [location.search.replace(/^\?/, ''), location.hash.replace(/^#/, '')].forEach(function (part) {
+      try {
+        new URLSearchParams(part).forEach(function (value, name) {
+          if (out[name] === undefined) out[name] = value;
+        });
+      } catch (ignored) { /* no settings */ }
+    });
+    return out;
+  }
+  function clean(value, max) {
+    return String(value || '').replace(/\s+/g, ' ').trim().slice(0, max);
+  }
+
+  var settings = readSettings();
+  var biz = clean(settings.name, 60) || 'Your Business Name';
+  var city = clean(settings.city, 40) || 'Your City';
+  var phone = clean(settings.phone, 25) || '(555) 555-0123';
+  var current = TRADES[0];
+  TRADES.forEach(function (t) { if (t.key === String(settings.trade || '').toLowerCase()) current = t; });
+
+  function $(id) { return document.getElementById(id); }
+  function all(selector) { return Array.prototype.slice.call(document.querySelectorAll(selector)); }
+  function el(tag, text, className) {
+    var node = document.createElement(tag);
+    if (text) node.textContent = text;
+    if (className) node.className = className;
+    return node;
+  }
+  function icon(key) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[key] + '</svg>';
+  }
+  function empty(node) { while (node.firstChild) node.removeChild(node.firstChild); }
+
+  function render(t) {
+    current = t;
+    var root = document.documentElement;
+    root.style.setProperty('--ground', t.ground);
+    root.style.setProperty('--accent', t.accent);
+    document.title = biz + ' | ' + t.label + ' in ' + city;
+
+    all('[data-biz]').forEach(function (n) { n.textContent = biz; });
+    all('[data-city]').forEach(function (n) { n.textContent = city; });
+    all('[data-phone]').forEach(function (n) { n.textContent = phone; });
+    all('[data-tel]').forEach(function (n) { n.setAttribute('href', 'tel:' + phone.replace(/[^0-9+]/g, '')); });
+    all('[data-trade-label]').forEach(function (n) { n.textContent = t.label; });
+    all('[data-icon]').forEach(function (n) { n.innerHTML = icon(t.key); });
+
+    $('headline').textContent = t.headline;
+    $('subhead').textContent = t.sub;
+    $('servicesLede').textContent = t.lede;
+
+    var checks = $('checks');
+    empty(checks);
+    t.checks.forEach(function (text) {
+      var li = el('li');
+      li.innerHTML = CHECK;
+      li.appendChild(el('span', text));
+      checks.appendChild(li);
+    });
+
+    var list = $('serviceList');
+    var pick = $('fService');
+    var grid = $('workGrid');
+    empty(list); empty(pick); empty(grid);
+    t.services.forEach(function (service) {
+      var li = el('li');
+      li.appendChild(el('h3', service[0]));
+      li.appendChild(el('p', service[1]));
+      list.appendChild(li);
+
+      pick.appendChild(el('option', service[0]));
+
+      var shot = el('div', '', 'shot');
+      shot.innerHTML = icon(t.key);
+      shot.appendChild(el('strong', service[0]));
+      shot.appendChild(el('span', 'Your project photo'));
+      grid.appendChild(shot);
+    });
+    pick.appendChild(el('option', 'Something else'));
+
+    var reviews = $('reviewList');
+    empty(reviews);
+    REVIEWS.forEach(function (text) {
+      var box = el('figure', '', 'review');
+      box.style.margin = '0';
+      var stars = el('div', '\u2605\u2605\u2605\u2605\u2605', 'stars');
+      stars.setAttribute('role', 'img');
+      stars.setAttribute('aria-label', '5 out of 5 stars');
+      box.appendChild(stars);
+      box.appendChild(el('blockquote', text.replace('{result}', t.result)));
+      var by = el('figcaption');
+      by.appendChild(el('cite', 'Customer name, ' + city));
+      box.appendChild(by);
+      reviews.appendChild(box);
+    });
+
+    var faq = $('faqList');
+    empty(faq);
+    t.faqs.concat(SHARED_FAQS).forEach(function (pair) {
+      var d = el('details');
+      d.appendChild(el('summary', pair[0]));
+      d.appendChild(el('p', pair[1]));
+      faq.appendChild(d);
+    });
+
+    resetForm();
+  }
+
+  function resetForm() {
+    $('formMsg').textContent = '';
+    $('formMsg').removeAttribute('data-kind');
+    $('sendBtn').disabled = false;
+    $('sendBtn').textContent = 'Request my estimate';
+  }
+
+  // trade picker
+  var picker = $('tradePick');
+  TRADES.forEach(function (t) {
+    var option = el('option', t.label);
+    option.value = t.key;
+    picker.appendChild(option);
+  });
+  picker.value = current.key;
+  picker.addEventListener('change', function () {
+    var next = TRADES.filter(function (t) { return t.key === picker.value; })[0];
+    if (!next) return;
+    render(next);
+    window.scrollTo(0, 0);
+  });
+  if (settings.bar === '0') $('demoBar').hidden = true;
+
+  // in-page links scroll without touching the address
+  document.addEventListener('click', function (event) {
+    var link = event.target.closest ? event.target.closest('[data-scroll]') : null;
+    if (!link) return;
+    var target = $(link.getAttribute('data-scroll'));
+    if (!target) return;
+    event.preventDefault();
+    target.scrollIntoView();
+    if (target.id === 'estimate') $('fName').focus({ preventScroll: true });
+  });
+
+  // demo form: nothing is sent anywhere
+  $('estimate').addEventListener('submit', function (event) {
+    event.preventDefault();
+    var msg = $('formMsg');
+    if (!$('fName').value.trim() || !$('fPhone').value.trim()) {
+      msg.setAttribute('data-kind', 'error');
+      msg.textContent = 'Add your name and phone number so we can call you back.';
+      return;
+    }
+    msg.removeAttribute('data-kind');
+    msg.textContent = 'Estimate requested. On the live site, this goes straight to your phone and email.';
+    $('sendBtn').disabled = true;
+    $('sendBtn').textContent = 'Estimate requested';
+  });
+
+  render(current);
+})();
+</script>
+</body>
+</html>
+a
